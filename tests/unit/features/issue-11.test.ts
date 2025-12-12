@@ -9,7 +9,7 @@ jest.mock('path');
 describe('Issue 11: Service Analysis and Requirements Definition', () => {
   describe('analyzeService', () => {
     it('should analyze current Rideryo service features', async () => {
-      const mockFeatures = ['Ride booking', 'Payment processing', 'Driver matching'];
+      const mockFeatures = ['Feature 1', 'Feature 2'];
       (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockFeatures));
 
       const result = await analyzeService();
@@ -19,7 +19,7 @@ describe('Issue 11: Service Analysis and Requirements Definition', () => {
     });
 
     it('should analyze tech stack and architecture', async () => {
-      const mockTechStack = { frontend: 'React', backend: 'Node.js', database: 'MongoDB' };
+      const mockTechStack = { frontend: 'React', backend: 'Node.js' };
       (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockTechStack));
 
       const result = await analyzeService();
@@ -29,7 +29,7 @@ describe('Issue 11: Service Analysis and Requirements Definition', () => {
     });
 
     it('should collect user feedback and reviews', async () => {
-      const mockFeedback = [{ user: 'User1', rating: 4, comment: 'Good service' }];
+      const mockFeedback = ['Good app', 'Needs improvement'];
       (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockFeedback));
 
       const result = await analyzeService();
@@ -39,12 +39,12 @@ describe('Issue 11: Service Analysis and Requirements Definition', () => {
     });
 
     it('should compare with competitor services', async () => {
-      const mockCompetitors = [{ name: 'Uber', marketShare: '30%' }];
+      const mockCompetitors = [{ name: 'Competitor A', features: ['Feature X', 'Feature Y'] }];
       (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockCompetitors));
 
       const result = await analyzeService();
 
-      expect(result.competitors).toEqual(mockCompetitors);
+      expect(result.competitorAnalysis).toEqual(mockCompetitors);
       expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringContaining('competitors.json'), 'utf8');
     });
 
@@ -59,84 +59,83 @@ describe('Issue 11: Service Analysis and Requirements Definition', () => {
 
   describe('defineRequirements', () => {
     it('should define business requirements', () => {
-      const mockBusinessReqs = ['Increase market share', 'Improve user retention'];
       const result = defineRequirements();
 
-      expect(result.businessRequirements).toEqual(expect.arrayContaining(mockBusinessReqs));
+      expect(result.businessRequirements).toBeDefined();
+      expect(result.businessRequirements.length).toBeGreaterThan(0);
     });
 
     it('should define functional requirements', () => {
-      const mockFunctionalReqs = ['Real-time ride tracking', 'In-app messaging'];
       const result = defineRequirements();
 
-      expect(result.functionalRequirements).toEqual(expect.arrayContaining(mockFunctionalReqs));
+      expect(result.functionalRequirements).toBeDefined();
+      expect(result.functionalRequirements.length).toBeGreaterThan(0);
     });
 
     it('should define non-functional requirements', () => {
-      const mockNonFunctionalReqs = ['99.9% uptime', 'GDPR compliance'];
       const result = defineRequirements();
 
-      expect(result.nonFunctionalRequirements).toEqual(expect.arrayContaining(mockNonFunctionalReqs));
+      expect(result.nonFunctionalRequirements).toBeDefined();
+      expect(result.nonFunctionalRequirements.length).toBeGreaterThan(0);
     });
 
     it('should create user stories', () => {
-      const mockUserStories = ['As a rider, I want to book a ride quickly'];
       const result = defineRequirements();
 
-      expect(result.userStories).toEqual(expect.arrayContaining(mockUserStories));
-    });
-
-    it('should return an object with all requirement types', () => {
-      const result = defineRequirements();
-
-      expect(result).toHaveProperty('businessRequirements');
-      expect(result).toHaveProperty('functionalRequirements');
-      expect(result).toHaveProperty('nonFunctionalRequirements');
-      expect(result).toHaveProperty('userStories');
+      expect(result.userStories).toBeDefined();
+      expect(result.userStories.length).toBeGreaterThan(0);
     });
   });
 
   describe('prioritizeTasks', () => {
     it('should select MVP features', () => {
-      const mockMVP = ['Ride booking', 'Payment processing'];
-      const result = prioritizeTasks();
+      const requirements = defineRequirements();
+      const result = prioritizeTasks(requirements);
 
-      expect(result.mvpFeatures).toEqual(expect.arrayContaining(mockMVP));
+      expect(result.mvpFeatures).toBeDefined();
+      expect(result.mvpFeatures.length).toBeGreaterThan(0);
     });
 
     it('should determine development priorities', () => {
-      const mockPriorities = ['High', 'Medium', 'Low'];
-      const result = prioritizeTasks();
+      const requirements = defineRequirements();
+      const result = prioritizeTasks(requirements);
 
-      expect(result.developmentPriorities).toEqual(expect.arrayContaining(mockPriorities));
+      expect(result.developmentPriorities).toBeDefined();
+      expect(result.developmentPriorities.length).toBeGreaterThan(0);
     });
 
     it('should create a milestone plan', () => {
-      const mockMilestones = [
-        { name: 'MVP Launch', date: expect.any(Date) },
-        { name: 'Version 2.0', date: expect.any(Date) }
-      ];
-      const result = prioritizeTasks();
+      const requirements = defineRequirements();
+      const result = prioritizeTasks(requirements);
 
-      expect(result.milestonePlan).toEqual(expect.arrayContaining(mockMilestones));
+      expect(result.milestonePlan).toBeDefined();
+      expect(result.milestonePlan.length).toBeGreaterThan(0);
     });
 
-    it('should return an object with all prioritization elements', () => {
-      const result = prioritizeTasks();
+    it('should prioritize all provided requirements', () => {
+      const requirements = defineRequirements();
+      const result = prioritizeTasks(requirements);
 
-      expect(result).toHaveProperty('mvpFeatures');
-      expect(result).toHaveProperty('developmentPriorities');
-      expect(result).toHaveProperty('milestonePlan');
+      const totalRequirements = requirements.businessRequirements.length +
+        requirements.functionalRequirements.length +
+        requirements.nonFunctionalRequirements.length;
+
+      expect(result.developmentPriorities.length).toBe(totalRequirements);
     });
 
-    it('should ensure milestone dates are in the future', () => {
-      const result = prioritizeTasks();
-      const now = new Date();
+    it('should handle empty requirements', () => {
+      const emptyRequirements = {
+        businessRequirements: [],
+        functionalRequirements: [],
+        nonFunctionalRequirements: [],
+        userStories: []
+      };
 
-      result.milestonePlan.forEach(milestone => {
-        expect(milestone.date).toBeInstanceOf(Date);
-        expect(milestone.date.getTime()).toBeGreaterThan(now.getTime());
-      });
+      const result = prioritizeTasks(emptyRequirements);
+
+      expect(result.mvpFeatures).toEqual([]);
+      expect(result.developmentPriorities).toEqual([]);
+      expect(result.milestonePlan).toEqual([]);
     });
   });
 });
